@@ -175,3 +175,76 @@ elif menu == "📥 Import/Export":
         st.session_state.data = imported_df
         st.success("✅ Data Imported Successfully!")
         st.dataframe(imported_df, use_container_width=True)
+        # ---------- Book List with Filters & Download ----------
+if menu == "📘 Book List":
+    st.subheader("School Book List with Filters")
+
+    df = calculate_metrics(st.session_state.data.copy())
+
+    if df.empty:
+        st.warning("No data available. Please add records first.")
+    else:
+        st.write("### Apply Filters")
+
+        # Create a two-column layout for filters
+        col1, col2 = st.columns(2)
+
+        # Text filters
+        with col1:
+            zone_filter = st.multiselect("Zone", options=df["Zone"].unique())
+            grade_filter = st.multiselect("Grade", options=df["Grade"].unique())
+            category_filter = st.multiselect("Book Category", options=df["Book Category"].unique())
+
+        with col2:
+            sku_filter = st.text_input("Search SKU (partial match)")
+            book_name_filter = st.text_input("Search Book Name (partial match)")
+
+        # Numeric filters
+        qty_min, qty_max = int(df["Qty"].min()), int(df["Qty"].max())
+        selling_min, selling_max = float(df["Selling Price"].min()), float(df["Selling Price"].max())
+        cost_min, cost_max = float(df["Cost Price"].min()), float(df["Cost Price"].max())
+
+        st.write("### Numeric Filters")
+        qty_range = st.slider("Quantity Range", min_value=qty_min, max_value=qty_max, value=(qty_min, qty_max))
+        selling_range = st.slider("Selling Price Range", min_value=selling_min, max_value=selling_max,
+                                  value=(selling_min, selling_max))
+        cost_range = st.slider("Cost Price Range", min_value=cost_min, max_value=cost_max,
+                               value=(cost_min, cost_max))
+
+        # ---------- Apply Filters ----------
+        filtered_df = df.copy()
+
+        if zone_filter:
+            filtered_df = filtered_df[filtered_df["Zone"].isin(zone_filter)]
+        if grade_filter:
+            filtered_df = filtered_df[filtered_df["Grade"].isin(grade_filter)]
+        if category_filter:
+            filtered_df = filtered_df[filtered_df["Book Category"].isin(category_filter)]
+        if sku_filter:
+            filtered_df = filtered_df[filtered_df["SKU"].str.contains(sku_filter, case=False, na=False)]
+        if book_name_filter:
+            filtered_df = filtered_df[filtered_df["Book Name"].str.contains(book_name_filter, case=False, na=False)]
+
+        # Numeric filters
+        filtered_df = filtered_df[
+            (filtered_df["Qty"].between(qty_range[0], qty_range[1])) &
+            (filtered_df["Selling Price"].between(selling_range[0], selling_range[1])) &
+            (filtered_df["Cost Price"].between(cost_range[0], cost_range[1]))
+        ]
+
+        # ---------- Display Filtered Data ----------
+        st.write(f"### Filtered Records: {len(filtered_df)}")
+        st.dataframe(filtered_df, use_container_width=True)
+
+        # ---------- Download Filtered Data ----------
+        if not filtered_df.empty:
+            export_file = "Filtered_Book_List.xlsx"
+            filtered_df.to_excel(export_file, index=False)
+
+            with open(export_file, "rb") as file:
+                st.download_button(
+                    label="📥 Download Filtered Data",
+                    data=file,
+                    file_name=export_file,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
