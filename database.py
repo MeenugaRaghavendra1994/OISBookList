@@ -2,7 +2,7 @@ import sqlalchemy
 from sqlalchemy import create_engine
 
 # Create a SQLite database (file based)
-DATABASE_URL = "sqlite:///books.db"
+DATABASE_URL = "postgresql+psycopg2://username:password@localhost:5432/mydb"
 
 # Create engine
 engine = create_engine(DATABASE_URL)
