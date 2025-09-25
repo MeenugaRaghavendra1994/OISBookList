@@ -168,13 +168,25 @@ elif menu == "📥 Import/Export":
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-    # Import
-    uploaded_file = st.file_uploader("📥 Upload Excel File", type=["xlsx"])
-    if uploaded_file:
-        imported_df = pd.read_excel(uploaded_file)
-        st.session_state.data = imported_df
-        st.success("✅ Data Imported Successfully!")
-        st.dataframe(imported_df, use_container_width=True)
+    # ---------- Import ----------
+uploaded_file = st.file_uploader("📥 Upload Excel File", type=["xlsx"])
+
+if uploaded_file:
+    # Read all columns as strings initially
+    imported_df = pd.read_excel(uploaded_file, dtype=str)
+
+    # Convert numeric columns back to numbers safely
+    numeric_cols = ["Qty", "Selling Price", "Cost Price"]
+    for col in numeric_cols:
+        if col in imported_df.columns:
+            imported_df[col] = pd.to_numeric(imported_df[col], errors="coerce").fillna(0)
+
+    # Store in session state
+    st.session_state.data = imported_df
+
+    st.success("✅ Data Imported Successfully!")
+    st.dataframe(imported_df, use_container_width=True)
+
         # ---------- Book List with Filters & Download ----------
 if menu == "📘 Book List":
     st.subheader("School Book List with Filters")
