@@ -1,11 +1,16 @@
-import sqlalchemy
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
+import urllib.parse
 
-# Create a SQLite database (file based)
-DATABASE_URL = "postgresql+psycopg2://username:password@localhost:5432/mydb"
+username = "postgres"
+password = urllib.parse.quote_plus("Raghu@1819")  # Encodes @ as %40
+host = "localhost"
+port = "5432"
+database = "school_books_db"
 
-# Create engine
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}",
+    echo=True
+)
 
 # Function to create table if not exists
 def init_db():

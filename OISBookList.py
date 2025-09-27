@@ -1,12 +1,19 @@
 import streamlit as st
 import pandas as pd
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
+import urllib.parse
 
-# PostgreSQL connection
+username = "postgres"
+password = urllib.parse.quote_plus("Raghu@1819")  # Encodes @ as %40
+host = "localhost"
+port = "5432"
+database = "school_books_db"
+
 engine = create_engine(
-    "postgresql+psycopg2://PostgreSQL 17:Raghu@1819@localhost:5432/school_books_db",
+    f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}",
     echo=True
 )
+
 
 # Initialize database
 def init_db():
